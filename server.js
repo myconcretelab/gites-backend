@@ -7,11 +7,11 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 5001; // Le port sur lequel votre serveur Node.js va écouter
+const port = process.env.PORT ; // Le port sur lequel votre serveur Node.js va écouter
 
 // Middleware pour permettre les requêtes cross-origin depuis votre application React
 // Assurez-vous que l'URL de votre front-end React est correcte (par défaut, c'est http://localhost:3000)
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: process.env.REACT_APP_BACKEND_URL }));
 app.use(express.json()); // Pour parser les requêtes JSON si besoin
 
 // --- Configuration de l'API Google Sheets ---
@@ -22,7 +22,7 @@ const auth = new google.auth.GoogleAuth({
 
 // Remplacez avec l'ID de votre feuille Google Sheets
 // C'est la partie entre /d/ et /edit dans l'URL de votre feuille
-const spreadsheetId = '1_VUisYokoGjm3olqXlzhMMRMnzb3BpcPwvZMWKkjtiA';
+const spreadsheetId = process.env.SPREAD_SHEET_ID;
 
 // Fonction pour récupérer les données d'une feuille spécifique
 async function getSheetData(sheetName) {
@@ -201,7 +201,7 @@ return lignesFractionnees;
 
 
 // Route enrichie pour Google + Archives
-app.get('/api/gites-data', async (req, res) => {
+app.get( process.env.REACT_APP_BACKEND_URI, async (req, res) => {
   try {
     const gites = ['Phonsine', 'Gree', 'Edmond', 'Liberté'];
     const allGiteData = {};
@@ -215,11 +215,7 @@ app.get('/api/gites-data', async (req, res) => {
       const fusion = nettoyerEtFusionner(googleData, archiveData);
       allGiteData[gite] = fusion;
     }
-    console.log('Résumé des tailles :');
-    for (const gite of gites) {
-    console.log(`${gite} - archives: ${archives[gite]?.length || 0}, google: ${allGiteData[gite]?.length || 0}`);
-    }
-
+    // Ajout des données d'archives
     res.json(allGiteData);
   } catch (error) {
     console.error('Erreur lors de la fusion des données :', error);
@@ -230,16 +226,10 @@ app.get('/api/gites-data', async (req, res) => {
 
 // Démarrage du serveur
 app.listen(port, () => {
-    console.log(`Serveur backend des gîtes démarré sur http://localhost:${port}`);
+    console.log(`Serveur backend des gîtes démarré sur le port ${port}  avec l'URL de base ${process.env.REACT_APP_BACKEND_URL}/${process.env.REACT_APP_BACKEND_URI} `);
 });
 
-/**
- * Pourrais-tu m'écrire une app en React qui afficherait un tableau de bord élégant et moderne contenant 4 fiches représentant 4 gîtes. Chaque fiche affiche différentes informations et statistique des réservations sous forme de chiffres et graphique (reactchart).
 
-Il y a un sélecteur élégant en haut de la page qui permet de basculer l'affichage entre les années ou sélectionner un mois d'une année. Par défault, c'est l'année en cours qui est sélectionnée.
-
-Les données sont chargées depuis une route "http://localhost:5001/api/gites-data" au format json, 
- */
 function decouperSiChevaucheDeuxMois(ligne) {
   const prixParNuitIdx = 6;
   const revenusIdx = 7;
