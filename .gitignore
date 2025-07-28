@@ -1,0 +1,20 @@
+node_modules/
+npm-debug.log
+
+# Build output
+build/
+dist/
+
+# Env files
+.env
+
+# Mac system files
+.DS_Store
+
+# VSCode
+.vscode/
+.idea/
+
+# API KEys
+# api-keys.json
+google-sheets-api-key.json
