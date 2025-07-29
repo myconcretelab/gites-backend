@@ -7,11 +7,14 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT ; // Le port sur lequel votre serveur Node.js va écouter
+
+const port = process.env.PORT || 5001; // Le port sur lequel votre serveur Node.js va écouter
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const hostname = process.env.IP || '127.0.0.1'; // Valeur par défaut si non défini
 
 // Middleware pour permettre les requêtes cross-origin depuis votre application React
 // Assurez-vous que l'URL de votre front-end React est correcte (par défaut, c'est http://localhost:3000)
-app.use(cors({ origin: process.env.REACT_APP_BACKEND_URL }));
+app.use(cors({ origin: allowedOrigin }));
 app.use(express.json()); // Pour parser les requêtes JSON si besoin
 
 // --- Configuration de l'API Google Sheets ---
@@ -225,8 +228,8 @@ app.get( process.env.REACT_APP_BACKEND_URI, async (req, res) => {
 
 
 // Démarrage du serveur
-app.listen(port, () => {
-    console.log(`Serveur backend des gîtes démarré sur le port ${port}  avec l'URL de base ${process.env.REACT_APP_BACKEND_URL}/${process.env.REACT_APP_BACKEND_URI} `);
+app.listen(port,hostname, () => {
+    console.log(`Serveur backend des gîtes démarré sur le port ${port}`);
 });
 
 
