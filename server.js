@@ -9,13 +9,15 @@ const fs = require('fs');
 const app = express();
 
 const port = process.env.PORT || 5001; // Le port sur lequel votre serveur Node.js va écouter
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 const hostname = process.env.IP || '127.0.0.1'; // Valeur par défaut si non défini
 
-// Middleware pour permettre les requêtes cross-origin depuis votre application React
-// Assurez-vous que l'URL de votre front-end React est correcte (par défaut, c'est http://localhost:3000)
-app.use(cors({ origin: allowedOrigin }));
 app.use(express.json()); // Pour parser les requêtes JSON si besoin
+
+// *** Servir le build React ***
+const buildPath = path.join(__dirname, '..', 'dashboard-gites-v3', 'build'); // ajuste le chemin selon ton arborescence
+// Assurez-vous que le dossier de build existe et contient les fichiers statiques
+app.use(express.static(buildPath));
+
 
 // --- Configuration de l'API Google Sheets ---
 const auth = new google.auth.GoogleAuth({
@@ -204,7 +206,7 @@ return lignesFractionnees;
 
 
 // Route enrichie pour Google + Archives
-app.get( process.env.REACT_APP_BACKEND_URI, async (req, res) => {
+app.get( '/api/gites-data', async (req, res) => { //
   try {
     const gites = ['Phonsine', 'Gree', 'Edmond', 'Liberté'];
     const allGiteData = {};
@@ -225,6 +227,14 @@ app.get( process.env.REACT_APP_BACKEND_URI, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// *** Pour toutes les autres routes (sauf API), servir index.html du build React ***
+app.get('/*splat', (req, res) => {
+  // Important : placer cette route APRES toutes les routes API !
+  res.sendFile(path.join(buildPath, 'index.html')); // Envoie le fichier index.html du build React
+});
+
+
 
 
 // Démarrage du serveur
