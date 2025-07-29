@@ -228,8 +228,8 @@ app.get( process.env.REACT_APP_BACKEND_URI, async (req, res) => {
 
 
 // Démarrage du serveur
-app.listen(port,hostname, () => {
-    console.log(`Serveur backend des gîtes démarré sur le port ${port}`);
+app.listen(port, () => {
+     console.log(`Serveur backend lancé sur http://${hostname}:${port}`);
 });
 
 
