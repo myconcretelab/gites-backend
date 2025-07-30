@@ -11,13 +11,13 @@ const app = express();
 const port = process.env.PORT || 5001; // Le port sur lequel votre serveur Node.js va écouter
 const hostname = process.env.IP || '127.0.0.1'; // Valeur par défaut si non défini
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use(cors()); // Autorise tout en dev
+} else {
+  app.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
+}
+
 app.use(express.json()); // Pour parser les requêtes JSON si besoin
-
-// *** Servir le build React ***
-const buildPath = path.join(__dirname, '..', 'dashboard-gites-v3', 'build'); // ajuste le chemin selon ton arborescence
-// Assurez-vous que le dossier de build existe et contient les fichiers statiques
-app.use(express.static(buildPath));
-
 
 // --- Configuration de l'API Google Sheets ---
 const auth = new google.auth.GoogleAuth({
@@ -229,11 +229,15 @@ app.get( '/api/gites-data', async (req, res) => { //
 });
 
 // *** Pour toutes les autres routes (sauf API), servir index.html du build React ***
+
 app.get('/*splat', (req, res) => {
+    // *** Servir le build React ***
+  const buildPath = path.join(__dirname, '..', 'dashboard-gites-v3', 'build'); // ajuste le chemin selon ton arborescence
+  // Assurez-vous que le dossier de build existe et contient les fichiers statiques
+  app.use(express.static(buildPath));
   // Important : placer cette route APRES toutes les routes API !
   res.sendFile(path.join(buildPath, 'index.html')); // Envoie le fichier index.html du build React
 });
-
 
 
 
