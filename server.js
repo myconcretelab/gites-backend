@@ -13,6 +13,12 @@ const hostname = process.env.IP || '127.0.0.1'; // Valeur par défaut si non dé
 
 app.use(express.json()); // Pour parser les requêtes JSON si besoin
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use(cors()); // Autorise tout en dev
+} else {
+  app.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
+}
+
 // *** Servir le build React ***
 const buildPath = path.join(__dirname, '..', 'dashboard-gites-v3', 'build'); // ajuste le chemin selon ton arborescence
 // Assurez-vous que le dossier de build existe et contient les fichiers statiques
