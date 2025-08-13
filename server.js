@@ -43,10 +43,10 @@ async function getSheetData(sheetName) {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: spreadsheetId,
-            range: `${sheetName}!A:Z`, // Récupère toutes les colonnes de la feuille
+            range: `${sheetName}!A:I`, // Récupère uniquement les 9 premières colonnes
         });
 
-        return response.data.values;
+        return (response.data.values || []).map(row => row.slice(0, 9));
     } catch (error) {
         console.error(`Erreur lors de la récupération des données de la feuille ${sheetName}:`, error);
         throw new Error(`Impossible de récupérer les données de la feuille ${sheetName}`);
@@ -84,19 +84,19 @@ function nettoyerEtFusionner(google, archives) {
 
   const nettoyer = (ligne) => {
     if (!Array.isArray(ligne)) return null;
-const cleaned = ligne.map((val, i) => {
-  if (typeof val === 'string') val = val.trim();
-  if (colonnesNumeriques.includes(i)) {
-    if (typeof val === 'string') {
-      // Gestion des espaces insécables, séparateurs français
-      const cleanedVal = val.replace(/[\s ]/g, '').replace(',', '.');
-      const match = cleanedVal.match(/-?\d+(\.\d+)?/);
-      return match ? parseFloat(match[0]) : (typeof val === 'number' ? val : null);
-    }
-    return typeof val === 'number' ? val : null;
-  }
-  return val === '' ? null : val;
-});
+    const cleaned = ligne.slice(0, 9).map((val, i) => {
+      if (typeof val === 'string') val = val.trim();
+      if (colonnesNumeriques.includes(i)) {
+        if (typeof val === 'string') {
+          // Gestion des espaces insécables, séparateurs français
+          const cleanedVal = val.replace(/[\s ]/g, '').replace(',', '.');
+          const match = cleanedVal.match(/-?\d+(\.\d+)?/);
+          return match ? parseFloat(match[0]) : (typeof val === 'number' ? val : null);
+        }
+        return typeof val === 'number' ? val : null;
+      }
+      return val === '' ? null : val;
+    });
     return cleaned.every(v => v === null || v === '') ? null : cleaned;
   };
 
@@ -222,7 +222,7 @@ app.get( '/api/gites-data', async (req, res) => { //
 
     for (const gite of gites) {
       const googleData = await getSheetData(gite);
-      const archiveData = archives[gite] || [];
+      const archiveData = (archives[gite] || []).map(ligne => ligne.slice(0, 9));
       const fusion = nettoyerEtFusionner(googleData, archiveData);
       allGiteData[gite] = fusion;
     }

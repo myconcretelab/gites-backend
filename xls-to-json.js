@@ -26,7 +26,7 @@ async function lireFeuille(feuille) {
   feuille.eachRow((row, rowNumber) => {
     if (row.actualCellCount === 0) return;
 
-    const valeurs = row.values.slice(1).map(cell => {
+    const valeurs = row.values.slice(1, 10).map(cell => {
       let valeur = (cell && typeof cell === 'object' && 'result' in cell) ? cell.result : cell;
       return formaterDate(valeur);
     });
